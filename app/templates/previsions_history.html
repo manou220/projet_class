@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}BoursA - Historique des Prévisions{% endblock %}
+
+{% block head_extra %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .forecast-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .forecast-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border-radius: 1rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto p-6">
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Historique des Prévisions ML</h1>
+                <a href="{{ url_for('previsions.index') }}" class="bg-amber-500 text-white px-4 py-2 rounded-full text-lg font-semibold hover:bg-amber-600 transition duration-300 shadow-lg">
+                    <i class="fas fa-chart-line mr-2"></i> Effectuer une Prévision
+                </a>
+            </div>
+            <p class="text-gray-600">Visualisez et gérez toutes vos prévisions effectuées sur BoursA</p>
+        </div>
+        
+        {% if total_forecasts == 0 %}
+        <div class="text-center py-16 bg-white rounded-2xl shadow-lg">
+            <div class="max-w-md mx-auto">
+                <div class="w-24 h-24 mx-auto mb-6 bg-amber-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-chart-line text-amber-600 text-4xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Aucune prévision dans l'historique</h2>
+                <p class="text-gray-600 mb-8">Vous n'avez pas encore effectué de prévisions. Commencez par analyser vos données.</p>
+                <a href="{{ url_for('previsions.index') }}" class="inline-block bg-amber-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-amber-700 transition">
+                    <i class="fas fa-play mr-2"></i>Effectuer une première prévision
+                </a>
+            </div>
+        </div>
+        
+        {% else %}
+        <!-- Statistiques générales -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="stat-card p-6">
+                <div class="flex items-center">
+                    <div class="mr-4">
+                        <i class="fas fa-chart-line text-3xl opacity-80"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm opacity-90">Prévisions totales</p>
+                        <p class="text-2xl font-bold">{{ total_forecasts }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow">
+                <div class="flex items-center">
+                    <div class="mr-4 text-blue-600">
+                        <i class="fas fa-calendar-alt text-3xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Dernière prévision</p>
+                        <p class="text-lg font-bold text-gray-800">{{ history[0].timestamp if history else 'N/A' }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow">
+                <div class="flex items-center">
+                    <div class="mr-4 text-purple-600">
+                        <i class="fas fa-file-csv text-3xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Fichiers analysés</p>
+                        <p class="text-2xl font-bold text-gray-800" id="uniqueFiles">{{ history|map(attribute='filename')|unique|list|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Outils de gestion -->
+        <div class="mb-8 bg-white rounded-xl shadow p-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">Gérer l'historique</h3>
+                    <p class="text-gray-600 text-sm">Exportez ou nettoyez vos données de prévisions</p>
+                </div>
+                
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ url_for('previsions.download_forecast_history') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
+                        <i class="fas fa-download mr-2"></i> Télécharger l'historique (JSON)
+                    </a>
+                    <button onclick="showClearConfirmation()" class="bg-red-100 text-red-800 px-4 py-2 rounded-lg hover:bg-red-200 transition flex items-center">
+                        <i class="fas fa-trash-alt mr-2"></i> Tout effacer
+                    </button>
+
+                    <form id="clearHistoryForm" method="POST" action="{{ url_for('previsions.clear_forecast_history_route') }}" style="display: none;"></form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Liste des prévisions -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Toutes les prévisions effectuées</h3>
+                <span class="text-gray-600">{{ total_forecasts }} prévision(s)</span>
+            </div>
+            
+            <div class="space-y-4">
+                {% for forecast in history %}
+                <div class="forecast-card bg-white rounded-xl shadow p-6">
+                    <div class="flex flex-col md:flex-row justify-between gap-4">
+                        <!-- Informations principales -->
+                        <div class="flex-1">
+                            <div class="flex items-center mb-3">
+                                <h4 class="text-lg font-bold text-gray-800 mr-3">Prévision #{{ forecast.id }}</h4>
+                                <span class="badge bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold">
+                                    {{ forecast.model }}
+                                </span>
+                            </div>
+                            
+                            <div class="space-y-2 text-sm text-gray-600">
+                                <div class="flex items-center">
+                                    <i class="fas fa-file-alt w-5 mr-2"></i>
+                                    <span class="font-medium">Fichier:</span>
+                                    <span class="ml-2">{{ forecast.filename }}</span>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <i class="fas fa-chart-bar w-5 mr-2"></i>
+                                    <span class="font-medium">Colonne cible:</span>
+                                    <span class="ml-2">{{ forecast.target_column }}</span>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <i class="fas fa-calendar w-5 mr-2"></i>
+                                    <span class="font-medium">Date:</span>
+                                    <span class="ml-2">{{ forecast.timestamp }}</span>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <i class="fas fa-cog w-5 mr-2"></i>
+                                    <span class="font-medium">Paramètres:</span>
+                                    <span class="ml-2">{{ forecast.forecast_steps }} périodes, intervalle {{ forecast.forecast_interval }}, confiance {{ forecast.confidence_level }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Métriques -->
+                        <div class="flex flex-col justify-between items-end space-y-3">
+                            {% if forecast.metrics %}
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Moyenne prévue</p>
+                                <p class="text-xl font-bold text-gray-800">{{ forecast.metrics.forecast_mean|round(4) if forecast.metrics.forecast_mean else 'N/A' }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="flex gap-2">
+                                <a href="{{ url_for('previsions.download_forecast') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+                                    <i class="fas fa-download mr-1"></i> Télécharger
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function showClearConfirmation() {
+            if (confirm('Êtes-vous sûr de vouloir effacer tout l\'historique des prévisions ? Cette action est irréversible.')) {
+                document.getElementById('clearHistoryForm').submit();
+            }
+        }
+    </script>
+{% endblock %}
+

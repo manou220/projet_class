@@ -1,0 +1,6 @@
+{
+  "status": "failed",
+  "meta": null,
+  "result": null,
+  "error": "La colonne cible 'Close' est introuvable dans le fichier."
+}

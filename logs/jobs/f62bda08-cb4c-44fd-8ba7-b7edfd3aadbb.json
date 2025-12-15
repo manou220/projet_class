@@ -1,0 +1,6 @@
+{
+  "status": "failed",
+  "meta": null,
+  "result": null,
+  "error": "\"None of [DatetimeIndex(['2025-12-11 09:24:32.080900'], dtype='datetime64[ns]', name='Date', freq=None)] are in the [index]\""
+}
