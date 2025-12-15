@@ -151,3 +151,16 @@ Thumbs.db
 *.joblib
 *.pkl
 *.pickle
+
+# Logs
+logs/
+*.log
+
+# User locations database (peut contenir des données sensibles)
+user_locations.db
+
+# Fichiers de données uploadés (temporaires)
+uploads/*.csv
+uploads/*.xlsx
+uploads/*.xls
+!uploads/.gitkeep

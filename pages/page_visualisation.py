@@ -400,7 +400,7 @@ def creer_distribution(df):
         from scipy import stats
         donnees = df[colonne].dropna()
         kde = stats.gaussian_kde(donnees)
-        x_range = pd.Series(pd.np.linspace(donnees.min(), donnees.max(), 100))
+        x_range = pd.Series(np.linspace(donnees.min(), donnees.max(), 100))
         fig.add_trace(go.Scatter(
             x=x_range,
             y=kde(x_range) * len(donnees) * (donnees.max() - donnees.min()) / 30,
