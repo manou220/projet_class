@@ -1,17 +1,17 @@
-# 📊 Application d'Analyse de Données et Machine Learning
+# Application d'Analyse de Données et Machine Learning
 
 Application web interactive développée avec **Streamlit** pour l'analyse statistique de données et les prévisions avec Machine Learning.
 
-## 🚀 Fonctionnalités
+## Fonctionnalités
 
-### 📤 Chargement de données
+### Chargement de données
 - Import de fichiers CSV et Excel (max 16 MB)
 - Support multi-encodage (UTF-8, Latin-1, ISO-8859-1)
 - Prévisualisation et validation automatique
 - Détection des valeurs manquantes
 - Statistiques descriptives
 
-### 📊 Tests statistiques
+### Tests statistiques
 - **Tests de normalité** : Shapiro-Wilk, Kolmogorov-Smirnov
 - **Tests de comparaison** : Test t de Student, Mann-Whitney U
 - **Tests de corrélation** : Pearson, Spearman
@@ -80,7 +80,7 @@ python -m pip install -r requirements_streamlit.txt --user
 python -c "import streamlit, scipy, pandas, numpy, plotly; print('✓ Installation réussie')"
 ```
 
-## 🎯 Utilisation
+## Utilisation
 
 ### Lancement local
 
@@ -125,7 +125,7 @@ Projet-ML-Sea3/
 
 ```
 
-## 🎨 Exemples d'utilisation
+## Exemples d'utilisation
 
 ### 1. Analyser un fichier CSV
 
